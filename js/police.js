@@ -6,42 +6,42 @@ import { clamp, approachAngle, dist2D, rand, pick } from './utils.js';
 function makePoliceCar() {
   const g = new THREE.Group();
   const body = new THREE.Mesh(
-    new THREE.BoxGeometry(4.3, 1.4, 9),
+    new THREE.BoxGeometry(6.0, 2.0, 14),
     new THREE.MeshStandardMaterial({ color: 0x16181d, roughness: 0.4, metalness: 0.5 }));
-  body.position.y = 1.1; body.castShadow = true; g.add(body);
+  body.position.y = 1.6; body.castShadow = true; g.add(body);
 
   // weiße Türen
   for (const sx of [-1, 1]) {
-    const door = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.2, 3),
+    const door = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.8, 4.5),
       new THREE.MeshStandardMaterial({ color: 0xf2f2f2 }));
-    door.position.set(sx * 2.2, 1.1, 0); g.add(door);
+    door.position.set(sx * 3.05, 1.6, 0); g.add(door);
   }
 
   const cabin = new THREE.Mesh(
-    new THREE.BoxGeometry(3.6, 1.2, 4.5),
+    new THREE.BoxGeometry(5.0, 1.8, 7),
     new THREE.MeshStandardMaterial({ color: 0x0a0c10, roughness: 0.2, metalness: 0.3, transparent: true, opacity: 0.85 }));
-  cabin.position.set(0, 2.0, -0.4); cabin.castShadow = true; g.add(cabin);
+  cabin.position.set(0, 3.0, -0.6); cabin.castShadow = true; g.add(cabin);
 
   // Lichtbalken
-  const blue = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 1.1),
+  const blue = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.7, 1.6),
     new THREE.MeshStandardMaterial({ color: 0x0033ff, emissive: 0x0033ff, emissiveIntensity: 2 }));
-  blue.position.set(-0.9, 2.85, -0.4); g.add(blue);
-  const red = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 1.1),
+  blue.position.set(-1.3, 4.3, -0.6); g.add(blue);
+  const red = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.7, 1.6),
     new THREE.MeshStandardMaterial({ color: 0xff0022, emissive: 0xff0022, emissiveIntensity: 2 }));
-  red.position.set(0.9, 2.85, -0.4); g.add(red);
+  red.position.set(1.3, 4.3, -0.6); g.add(red);
 
-  const blueLight = new THREE.PointLight(0x2a5bff, 0, 40);
-  blueLight.position.set(-0.9, 3.2, -0.4); g.add(blueLight);
-  const redLight = new THREE.PointLight(0xff2233, 0, 40);
-  redLight.position.set(0.9, 3.2, -0.4); g.add(redLight);
+  const blueLight = new THREE.PointLight(0x2a5bff, 0, 50);
+  blueLight.position.set(-1.3, 4.7, -0.6); g.add(blueLight);
+  const redLight = new THREE.PointLight(0xff2233, 0, 50);
+  redLight.position.set(1.3, 4.7, -0.6); g.add(redLight);
 
   // Räder
   const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0c0c0e });
-  const wheelGeo = new THREE.CylinderGeometry(1, 1, 0.8, 12);
+  const wheelGeo = new THREE.CylinderGeometry(1.5, 1.5, 1.1, 14);
   for (const [sx, sz] of [[-1, 1], [1, 1], [-1, -1], [1, -1]]) {
     const w = new THREE.Mesh(wheelGeo, wheelMat);
     w.rotation.z = Math.PI / 2;
-    w.position.set(sx * 2.1, 0.9, sz * 2.8); w.castShadow = true; g.add(w);
+    w.position.set(sx * 3.0, 1.3, sz * 4.3); w.castShadow = true; g.add(w);
   }
 
   g.userData = { blue, red, blueLight, redLight };

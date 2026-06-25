@@ -96,8 +96,8 @@ class Game {
     // Zielpunkt: Spieler oder Fahrzeug
     let target;
     if (this.activeVehicle) {
-      target = this.activeVehicle.pos.clone().add(new THREE.Vector3(0, 4, 0));
-      this.camDist = 26;
+      target = this.activeVehicle.pos.clone().add(new THREE.Vector3(0, 5, 0));
+      this.camDist = 34;
     } else {
       target = this.player.pos.clone().add(new THREE.Vector3(0, 6, 0));
       this.camDist = 18;
@@ -126,7 +126,7 @@ class Game {
       this.activeVehicle = null;
     } else {
       // nächstes Fahrzeug suchen
-      let best = null, bestD = 12;
+      let best = null, bestD = 16;
       for (const v of this.vehicles) {
         const d = dist2D(this.player.pos.x, this.player.pos.z, v.pos.x, v.pos.z);
         if (d < bestD) { bestD = d; best = v; }

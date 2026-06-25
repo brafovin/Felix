@@ -3,12 +3,12 @@ import { keys } from './input.js';
 import { resolveCollision, inWater, WORLD } from './world.js';
 import { clamp, approachAngle } from './utils.js';
 
-// Fahrzeug-Vorlagen
+// Fahrzeug-Vorlagen (groß genug, dass die Spielfigur einsteigen kann)
 const CAR_TEMPLATES = [
-  { name: 'Comet Sport',  w: 4.2, l: 9,  h: 2.2, color: 0xd83a3a, baseSpeed: 62 },
-  { name: 'Urban SUV',    w: 4.6, l: 9.5, h: 3.2, color: 0x2b3a55, baseSpeed: 50 },
-  { name: 'Speedster GT', w: 4.0, l: 8.5, h: 1.9, color: 0xf0c020, baseSpeed: 72 },
-  { name: 'City Hatch',   w: 3.8, l: 7.5, h: 2.4, color: 0x3aa05a, baseSpeed: 48 },
+  { name: 'Comet Sport',  w: 5.6, l: 15,  h: 3.0, color: 0xd83a3a, baseSpeed: 62 },
+  { name: 'Urban SUV',    w: 6.0, l: 16,  h: 4.2, color: 0x2b3a55, baseSpeed: 50 },
+  { name: 'Speedster GT', w: 5.2, l: 14,  h: 2.8, color: 0xf0c020, baseSpeed: 72 },
+  { name: 'City Hatch',   w: 5.0, l: 13,  h: 3.2, color: 0x3aa05a, baseSpeed: 48 },
 ];
 
 export const TUNE_COLORS = [0xd83a3a, 0x2e7dd6, 0xf0c020, 0x2ec46b, 0xffffff, 0x111418, 0xff6fb0, 0xff8a2b];
