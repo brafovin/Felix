@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liberty Shores — Open World</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- Ladebildschirm -->
+  <div id="loading">
+    <div class="logo">LIBERTY&nbsp;SHORES</div>
+    <div class="sub">Open World Prototype</div>
+    <div class="bar"><div id="loadbar"></div></div>
+    <div class="hint">Lade Welt …</div>
+  </div>
+
+  <!-- Startmenü -->
+  <div id="menu" class="hidden">
+    <div class="logo">LIBERTY&nbsp;SHORES</div>
+    <div class="sub">Ein GTA-inspirierter Open-World-Prototyp</div>
+    <button id="playBtn">▶ Spielen</button>
+    <div class="controls-card">
+      <h3>Steuerung</h3>
+      <ul>
+        <li><b>W A S D</b> — Bewegen / Fahren</li>
+        <li><b>Maus</b> — Umsehen &nbsp;·&nbsp; <b>Linksklick</b> — Schießen</li>
+        <li><b>F</b> — Auto betreten / verlassen</li>
+        <li><b>Shift</b> — Sprinten / Boost</li>
+        <li><b>Leertaste</b> — Springen / Handbremse</li>
+        <li><b>1 / 2</b> — Faust / Pistole</li>
+        <li><b>E</b> — Interagieren (Garage / Mission)</li>
+        <li><b>M</b> — Große Karte &nbsp;·&nbsp; <b>Esc</b> — Maus freigeben</li>
+      </ul>
+    </div>
+    <div class="tip">Tipp: Fahr zur <span class="y">gelben</span> Garage zum Tunen, zu den <span class="o">orangen</span> Markern für Missionen.</div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div id="crosshair">+</div>
+
+    <div id="topleft">
+      <div class="money">$ <span id="money">2500</span></div>
+      <div class="stars" id="wanted"></div>
+    </div>
+
+    <div id="bottomleft">
+      <div class="stat">
+        <span class="label">LEBEN</span>
+        <div class="track"><div id="healthbar" class="fill health"></div></div>
+      </div>
+      <div class="stat" id="armorWrap">
+        <span class="label">PANZER</span>
+        <div class="track"><div id="armorbar" class="fill armor"></div></div>
+      </div>
+      <div class="weaponbox">
+        <span id="weaponName">Faust</span>
+        <span id="ammo"></span>
+      </div>
+    </div>
+
+    <div id="speedo" class="hidden">
+      <div class="kmh"><span id="kmh">0</span><small>km/h</small></div>
+      <div class="gearname" id="carName">—</div>
+    </div>
+
+    <div id="mission">
+      <div class="mtitle" id="missionTitle">Freies Spiel</div>
+      <div class="mdesc" id="missionDesc">Erkunde Liberty Shores. Finde eine Mission (orange) oder die Tuning-Garage (gelb).</div>
+    </div>
+
+    <canvas id="minimap" width="190" height="190"></canvas>
+
+    <div id="prompt" class="hidden"></div>
+    <div id="toast" class="hidden"></div>
+  </div>
+
+  <!-- Tuning-Garage Overlay -->
+  <div id="garage" class="hidden">
+    <div class="panel">
+      <h2>🔧 Tuner-Garage</h2>
+      <p class="garage-sub">Verbessere und individualisiere dein aktuelles Fahrzeug.</p>
+      <div class="tuner-grid">
+        <div class="tune-row">
+          <span>Lackfarbe</span>
+          <div class="swatches" id="colorSwatches"></div>
+        </div>
+        <div class="tune-row">
+          <span>Motor (Topspeed)</span>
+          <div class="upgrade" data-stat="engine"></div>
+        </div>
+        <div class="tune-row">
+          <span>Getriebe (Beschleunigung)</span>
+          <div class="upgrade" data-stat="accel"></div>
+        </div>
+        <div class="tune-row">
+          <span>Bremsen / Handling</span>
+          <div class="upgrade" data-stat="handling"></div>
+        </div>
+        <div class="tune-row">
+          <span>Nitro-Boost</span>
+          <div class="upgrade" data-stat="nitro"></div>
+        </div>
+      </div>
+      <div class="garage-foot">
+        <div class="balance">Guthaben: $ <span id="garageMoney">0</span></div>
+        <button id="closeGarage">Fertig (E)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Große Karte -->
+  <div id="bigmap" class="hidden">
+    <canvas id="bigmapCanvas" width="640" height="640"></canvas>
+    <div class="maphint">M / Esc zum Schließen</div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
