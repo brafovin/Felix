@@ -11,17 +11,18 @@ export const colliders = [];
 // Begehbare Gebäude-Eingänge / Marker
 export const buildings = [];
 
-export function buildWorld(scene) {
-  // ---------- Himmel ----------
-  scene.background = new THREE.Color(0x9ecbe0);
-  scene.fog = new THREE.Fog(0x9ecbe0, 350, 1100);
+export function buildWorld(scene, renderer) {
+  // ---------- Himmel (Verlauf + Sonne) ----------
+  const horizon = 0xdcecf2;
+  buildSky(scene);
+  scene.fog = new THREE.FogExp2(horizon, 0.00085);
 
-  // ---------- Licht ----------
-  const hemi = new THREE.HemisphereLight(0xbfe3ff, 0x4a5a40, 0.7);
+  // ---------- Licht (warmes, tiefes Sonnenlicht) ----------
+  const hemi = new THREE.HemisphereLight(0xbfe3ff, 0x55603f, 0.55);
   scene.add(hemi);
 
-  const sun = new THREE.DirectionalLight(0xfff2d6, 1.5);
-  sun.position.set(300, 500, 200);
+  const sun = new THREE.DirectionalLight(0xffe7c2, 2.1);
+  sun.position.set(360, 380, 260);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
   const s = 600;
@@ -29,17 +30,34 @@ export function buildWorld(scene) {
   sun.shadow.camera.top = s; sun.shadow.camera.bottom = -s;
   sun.shadow.camera.far = 1400;
   sun.shadow.bias = -0.0004;
+  sun.shadow.normalBias = 0.04;
   scene.add(sun);
 
+  // sanftes Fülllicht von vorne
+  const fill = new THREE.DirectionalLight(0x9fc0ff, 0.35);
+  fill.position.set(-200, 180, -260);
+  scene.add(fill);
+
+  // Reflexions-Umgebung (lässt Autos/Glas glänzen)
+  if (renderer) {
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const envScene = makeEnvScene();
+    scene.environment = pmrem.fromScene(envScene, 0.04).texture;
+  }
+
   // ---------- Boden (Gras / Land) ----------
-  const groundMat = new THREE.MeshStandardMaterial({ color: 0x4f7a43, roughness: 1 });
+  const grassTex = makeGroundTexture('#4f7a43', ['#5a8a4d', '#456b3a', '#6b9657'], 60);
+  grassTex.repeat.set(40, 40);
+  const groundMat = new THREE.MeshStandardMaterial({ map: grassTex, roughness: 1 });
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(WORLD * 2, WORLD * 2), groundMat);
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   scene.add(ground);
 
   // ---------- Strand ----------
-  const sandMat = new THREE.MeshStandardMaterial({ color: 0xe8d6a0, roughness: 1 });
+  const sandTex = makeGroundTexture('#e8d6a0', ['#efe0b4', '#dcc78a', '#f3e8c4'], 50);
+  sandTex.repeat.set(6, 40);
+  const sandMat = new THREE.MeshStandardMaterial({ map: sandTex, roughness: 1 });
   const beach = new THREE.Mesh(new THREE.PlaneGeometry(260, WORLD * 2), sandMat);
   beach.rotation.x = -Math.PI / 2;
   beach.position.set(BEACH_X + 60, 0.02, 0);
@@ -71,8 +89,8 @@ export function buildWorld(scene) {
 function createWater(scene) {
   const geo = new THREE.PlaneGeometry(900, WORLD * 2, 80, 160);
   const mat = new THREE.MeshStandardMaterial({
-    color: 0x1f7fb0, transparent: true, opacity: 0.86,
-    roughness: 0.15, metalness: 0.4,
+    color: 0x1b88bf, transparent: true, opacity: 0.82,
+    roughness: 0.08, metalness: 0.7, envMapIntensity: 1.4,
   });
   const water = new THREE.Mesh(geo, mat);
   water.rotation.x = -Math.PI / 2;
@@ -174,7 +192,7 @@ function addWindows(building, w, h, d) {
   const rows = Math.floor(h / 8);
   const cols = Math.floor(w / 8);
   const winGeo = new THREE.PlaneGeometry(3, 4);
-  const lit = new THREE.MeshStandardMaterial({ color: 0x223, emissive: 0xffd98a, emissiveIntensity: 0.5 });
+  const lit = new THREE.MeshStandardMaterial({ color: 0x223, emissive: 0xffd98a, emissiveIntensity: 1.6 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x10151c, emissive: 0x000, roughness: 1 });
   const inst = [];
   for (let r = 1; r < rows; r++) {
@@ -309,4 +327,74 @@ export function resolveCollision(x, z, r) {
 
 export function inWater(x) {
   return x > WATER_X;
+}
+
+// ---------------------------------------------------------------- Grafik-Helfer
+
+// Verlaufs-Himmel als Innenseite einer großen Kugel + Sonnenscheibe
+function buildSky(scene) {
+  const geo = new THREE.SphereGeometry(1100, 32, 16);
+  const mat = new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false,
+    uniforms: {
+      top:    { value: new THREE.Color(0x2f74c0) },
+      mid:    { value: new THREE.Color(0x86bfe0) },
+      bottom: { value: new THREE.Color(0xeef4ee) },
+    },
+    vertexShader: `
+      varying vec3 vP;
+      void main() { vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `
+      varying vec3 vP;
+      uniform vec3 top; uniform vec3 mid; uniform vec3 bottom;
+      void main() {
+        float h = normalize(vP).y;
+        vec3 col = h > 0.0 ? mix(mid, top, pow(h, 0.55)) : mix(mid, bottom, pow(-h, 0.4));
+        gl_FragColor = vec4(col, 1.0);
+      }`,
+  });
+  const sky = new THREE.Mesh(geo, mat);
+  scene.add(sky);
+
+  // Sonnenscheibe (wird durch Bloom zum Strahlen gebracht)
+  const sunDisc = new THREE.Mesh(
+    new THREE.SphereGeometry(34, 24, 24),
+    new THREE.MeshBasicMaterial({ color: 0xfff4d0 }));
+  sunDisc.position.set(360, 380, 260).normalize().multiplyScalar(980);
+  scene.add(sunDisc);
+}
+
+// Minimale Umgebung für Reflexionen (heller Himmel + dunkler Boden)
+function makeEnvScene() {
+  const env = new THREE.Scene();
+  const top = new THREE.Mesh(
+    new THREE.SphereGeometry(100, 16, 8),
+    new THREE.MeshBasicMaterial({ color: 0x9fc6e8, side: THREE.BackSide }));
+  env.add(top);
+  const light = new THREE.Mesh(
+    new THREE.BoxGeometry(60, 1, 60),
+    new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  light.position.set(20, 70, 20);
+  env.add(light);
+  return env;
+}
+
+// Prozedurale, leicht gesprenkelte Boden-Textur (Canvas)
+function makeGroundTexture(base, speckles, count) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = base; ctx.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < count * 12; i++) {
+    ctx.fillStyle = speckles[i % speckles.length];
+    const x = Math.random() * 128, y = Math.random() * 128, r = Math.random() * 2.2 + 0.5;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
 }

@@ -1,4 +1,8 @@
 import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { initInput, keys, mouse, pressed, consumeInput } from './input.js';
 import { buildWorld, animateWater, WORLD, BEACH_X, WATER_X } from './world.js';
 import { Player } from './player.js';
@@ -19,11 +23,20 @@ class Game {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.05;
     this.renderer.domElement.id = 'scene';
     document.body.appendChild(this.renderer.domElement);
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.5, 2000);
+
+    // Postprocessing: Bloom für leuchtende Fenster, Lichter, Sonne
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.55, 0.6, 0.85);
+    this.composer.addPass(this.bloom);
+    this.composer.addPass(new OutputPass());
 
     this.camYaw = 0;
     this.camPitch = 0.25;
@@ -33,6 +46,7 @@ class Game {
       this.camera.aspect = innerWidth / innerHeight;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(innerWidth, innerHeight);
+      this.composer.setSize(innerWidth, innerHeight);
     });
 
     this.clock = new THREE.Clock();
@@ -40,7 +54,7 @@ class Game {
   }
 
   init() {
-    const { water } = buildWorld(this.scene);
+    const { water } = buildWorld(this.scene, this.renderer);
     this.water = water;
 
     this.audio = new GameAudio();
@@ -279,7 +293,7 @@ class Game {
     this.toggleBigmap();
     this.hud.update(dt, this);
 
-    this.renderer.render(this.scene, this.camera);
+    this.composer.render();
     consumeInput();
   }
 }

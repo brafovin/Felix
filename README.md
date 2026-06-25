@@ -29,7 +29,9 @@ keine Spiele-Engine nötig — einfach starten und spielen.
   und eine entspannte Hintergrundmusik. Stummschalten mit **P**.
 - 🗺️ **HUD** — Geld, Leben, Panzerung, Tacho, Fahndungslevel (Sterne),
   **Minimap** und große Karte (Taste **M**).
-- 🌅 **Grafik** — dynamische Schatten, Nebel, Beleuchtung, Glas-Reflexe, Tag-Licht.
+- 🌅 **Grafik** — filmisches Tone-Mapping (ACES), **Bloom** (leuchtende Fenster, Scheinwerfer,
+  Sonne), **Verlaufs-Himmel** mit Sonnenscheibe, **Reflexions-Umgebung** (glänzende Autos & Wasser),
+  prozedural texturierter Boden, dynamische Schatten und atmosphärischer Nebel.
 
 ## ▶️ Starten
 
