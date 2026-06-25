@@ -21,6 +21,12 @@ keine Spiele-Engine nötig — einfach starten und spielen.
   Gangmitglieder greifen an.
 - 🎯 **Missionen** — 3 Missionstypen: Ziel erreichen, Gegner ausschalten, Fahrzeug abliefern.
   Mit Belohnungen, Markern in der Welt und Fortschrittsanzeige.
+- 🚓 **Polizei & Verfolgung** — steigt dein Fahndungslevel (Sterne), rücken Polizeiautos
+  mit Blaulicht an, verfolgen dich und schießen. Mehr Sterne = mehr Streifen.
+  Schüttelst du sie ab, sinken die Sterne. Cops abschießen erhöht die Fahndung.
+- 🔊 **Sound & Musik** — komplett prozedural über die Web Audio API (offline, ohne Dateien):
+  Schüsse, Treffer, Motorengeräusch (tonhöhenabhängig), Polizeisirene, Erfolgs-Jingle
+  und eine entspannte Hintergrundmusik. Stummschalten mit **P**.
 - 🗺️ **HUD** — Geld, Leben, Panzerung, Tacho, Fahndungslevel (Sterne),
   **Minimap** und große Karte (Taste **M**).
 - 🌅 **Grafik** — dynamische Schatten, Nebel, Beleuchtung, Glas-Reflexe, Tag-Licht.
@@ -51,6 +57,7 @@ Dann im Browser öffnen: **http://localhost:8099**
 | **1 / 2** | Faust / Pistole |
 | **E** | Interagieren (Garage / Mission starten) |
 | **M** | Große Karte |
+| **P** | Ton an / aus |
 | **Esc** | Maus freigeben |
 
 ## 🗂️ Projektstruktur
@@ -67,6 +74,8 @@ js/
   weapons.js      # Waffen, Raycast-Schüsse
   npc.js          # Fußgänger & feindliche KI
   missions.js     # Missions-Manager mit Markern & Zielen
+  police.js       # Polizei-Einheiten, Verfolgungs-KI, Blaulicht
+  audio.js        # Prozeduraler Sound & Musik (Web Audio API)
   tuner.js        # Garage-Overlay
   hud.js          # HUD & Minimap-Rendering
   input.js        # Tastatur/Maus
@@ -76,9 +85,8 @@ js/
 ## 🚀 Ideen zum Erweitern
 
 - Mehr Missionen & eine Story-Kette
-- Polizei-/Verfolgungssystem (Fahndungslevel ist schon angelegt)
 - Mehr Waffen, Fahrzeuge, Boote fürs Wasser
 - Speichern/Laden des Fortschritts (localStorage)
-- Sound & Musik
+- Fahndungs-Eskalation: Straßensperren, Hubschrauber, SWAT
 
 Viel Spaß in **Liberty Shores**! 🏖️

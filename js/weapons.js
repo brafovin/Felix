@@ -7,8 +7,9 @@ export const WEAPONS = {
 };
 
 export class WeaponSystem {
-  constructor(scene) {
+  constructor(scene, audio = null) {
     this.scene = scene;
+    this.audio = audio;
     this.current = 'fist';
     this.ammo = { pistol: 60 };
     this.cooldown = 0;
@@ -61,6 +62,7 @@ export class WeaponSystem {
 
     const end = origin.clone().add(dir.clone().multiplyScalar(hitDist));
     this.addTracer(origin, end);
+    this.audio?.gunshot();
     if (hit) { hit.hurt(w.dmg); if (onHit) onHit(hit); }
   }
 

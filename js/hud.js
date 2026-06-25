@@ -126,6 +126,16 @@ export class HUD {
       const [vx, vy] = toMap(v.pos.x, v.pos.z); dot(ctx, vx, vy, 2);
     }
 
+    // Polizei (blau blinkend)
+    if (game.police) {
+      const blink = Math.floor(performance.now() / 250) % 2 === 0;
+      ctx.fillStyle = blink ? '#3a6bff' : '#ff3344';
+      for (const u of game.police.units) {
+        if (u.dead) continue;
+        const [ux, uy] = toMap(u.pos.x, u.pos.z); dot(ctx, ux, uy, 3);
+      }
+    }
+
     // Spieler (Pfeil)
     ctx.fillStyle = '#28e0c8';
     ctx.save();

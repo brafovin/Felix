@@ -6,8 +6,10 @@ import { spawnTraffic } from './vehicles.js';
 import { spawnPedestrians } from './npc.js';
 import { WeaponSystem } from './weapons.js';
 import { MissionManager } from './missions.js';
+import { PoliceManager } from './police.js';
 import { Tuner } from './tuner.js';
 import { HUD } from './hud.js';
+import { GameAudio } from './audio.js';
 import { clamp, dist2D } from './utils.js';
 
 class Game {
@@ -41,11 +43,13 @@ class Game {
     const { water } = buildWorld(this.scene);
     this.water = water;
 
+    this.audio = new GameAudio();
     this.player = new Player(this.scene);
     this.vehicles = spawnTraffic(this.scene);
     this.pedestrians = spawnPedestrians(this.scene, 26);
-    this.weapons = new WeaponSystem(this.scene);
+    this.weapons = new WeaponSystem(this.scene, this.audio);
     this.missions = new MissionManager(this.scene);
+    this.police = new PoliceManager(this.scene);
     this.hud = new HUD();
     this.tuner = new Tuner(this);
 
@@ -64,6 +68,7 @@ class Game {
   start() {
     document.getElementById('menu').classList.add('hidden');
     document.getElementById('hud').classList.remove('hidden');
+    this.audio.start();
     this.renderer.domElement.requestPointerLock();
     this.loop();
   }
@@ -144,20 +149,29 @@ class Game {
     const head = this.player.pos.clone().add(new THREE.Vector3(0, 6, 0));
     const dir = new THREE.Vector3();
     this.camera.getWorldDirection(dir);
-    const targets = this.pedestrians.concat(this.missions.enemies);
+    const targets = this.pedestrians.concat(this.missions.enemies, this.police.units);
     this.weapons.update(dt, head, dir, targets, this.player, (hit) => {
+      this.audio.hit();
       if (hit.dead) {
-        this.player.money += 50;
-        if (!hit.hostile && this.player.wanted < 5) this.player.wanted++;
+        if (hit.isPolice) {
+          this.player.money += 100;
+          if (this.player.wanted < 5) this.player.wanted++;
+        } else {
+          this.player.money += 50;
+          if (!hit.hostile && this.player.wanted < 5) this.player.wanted++;
+        }
       }
     });
   }
 
   // ----------------------------------------------------- Fahndungslevel
   updateWanted(dt) {
+    // Nur abkühlen, wenn die Polizei dich gerade NICHT verfolgt
+    if (this.police.beingChased) { this._wantedDecay = 0; return; }
     this._wantedDecay = (this._wantedDecay || 0) + dt;
-    if (this._wantedDecay > 12 && this.player.wanted > 0) {
+    if (this._wantedDecay > 8 && this.player.wanted > 0) {
       this.player.wanted--; this._wantedDecay = 0;
+      if (this.player.wanted === 0) this.hud.toast('Du bist die Polizei losgeworden.');
     }
   }
 
@@ -239,10 +253,28 @@ class Game {
     for (const p of this.pedestrians) p.update(dt, this.player);
     for (const e of this.missions.enemies) e.update(dt, this.player);
 
+    // Polizei
+    this.police.update(dt, this.player, this.weapons);
+
     // Missions-Fortschritt
     this.missions.update(this.player, !!this.activeVehicle, this.hud, (reward) => {
       this.player.money += reward;
+      this.audio.success();
     });
+
+    // Audio: Motor & Sirene
+    if (this.activeVehicle) {
+      this.audio.setEngine(true, clamp(this.activeVehicle.kmh / 200, 0, 1));
+    } else {
+      this.audio.setEngine(false);
+    }
+    this.audio.setSiren(this.police.count > 0 && this.player.wanted > 0);
+
+    // Stummschalten
+    if (pressed('p')) {
+      const m = this.audio.toggleMute();
+      this.hud.toast(m ? '🔇 Ton aus' : '🔊 Ton an');
+    }
 
     this.toggleBigmap();
     this.hud.update(dt, this);
